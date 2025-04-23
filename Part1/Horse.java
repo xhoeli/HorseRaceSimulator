@@ -38,7 +38,7 @@ public class Horse
     {
         hasFallen = true;
         // slightly decrease confidence once the horse has fallen
-        confidence = Math.max(0, confidence - 0.1); 
+        confidence = confidence - 0.1; 
     }
     
     /**
