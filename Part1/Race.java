@@ -1,3 +1,7 @@
+package Part1;
+
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.Scanner;
 import java.lang.Math;
@@ -11,9 +15,8 @@ import java.lang.Math;
  */
 public class Race {
     private int raceLength;
-    private Horse lane1Horse;
-    private Horse lane2Horse;
-    private Horse lane3Horse;
+    private int laneCount;
+    private List<Horse> horses;
     
     /**
      * Constructor for objects of class Race
@@ -21,11 +24,13 @@ public class Race {
      * 
      * @param distance the length of the racetrack (in metres/yards...)
      */
-    public Race(int distance) {
+    public Race(int distance, int laneCount) {
         raceLength = distance;
-        lane1Horse = null;
-        lane2Horse = null;
-        lane3Horse = null;
+        this.laneCount = laneCount;
+        this.horses = new ArrayList<>(laneCount);
+        for (int i = 0; i < laneCount; i++) {
+            horses.add(null); // Initialize all lanes as empty
+        }
     }
 
     /**
@@ -35,12 +40,12 @@ public class Race {
      * @param laneNumber the lane that the horse will be added to
      */
     public void addHorse(Horse theHorse, int laneNumber) {
-        if (laneNumber == 1) {
-            lane1Horse = theHorse;
-        } else if (laneNumber == 2) {
-            lane2Horse = theHorse;
-        } else if (laneNumber == 3) {
-            lane3Horse = theHorse;
+        if (laneNumber >= 0 && laneNumber < laneCount) {
+            if (horses.get(laneNumber) != null) {
+                System.out.println("Lane " + laneNumber + " is already occupied by " + horses.get(laneNumber).getName());
+            } else {
+                horses.set(laneNumber, theHorse);
+            }
         } else {
             System.out.println("Cannot add horse to lane " + laneNumber + " because there is no such lane");
         }
@@ -55,19 +60,19 @@ public class Race {
     public void startRace() {
         boolean finished = false;
 
-        lane1Horse.goBackToStart();
-        lane2Horse.goBackToStart();
-        lane3Horse.goBackToStart();
+        for (Horse horse : horses) {
+            if (horse != null) horse.goBackToStart();
+        }
 
         while (!finished) {
-            moveHorse(lane1Horse);
-            moveHorse(lane2Horse);
-            moveHorse(lane3Horse);
+            for (Horse horse : horses) {
+                if (horse != null) moveHorse(horse);
+            }
 
             printRace();
 
-            //made so when all horses fall the race stops
-            if (raceWonBy(lane1Horse) || raceWonBy(lane2Horse) || raceWonBy(lane3Horse) ||(lane1Horse.hasFallen() && lane2Horse.hasFallen() && lane3Horse.hasFallen())) {
+            //the race stops if all the horses have fallen or if one the horses has finished the race
+            if (allHorsesHaveFallen() || anyHorseHasFinished()) {
                 finished = true;
             }
 
@@ -79,14 +84,7 @@ public class Race {
         }
 
         // Show winner name after race ends
-        String winner = null;
-        if (lane1Horse.getDistanceTravelled() == raceLength) {
-            winner = lane1Horse.getName();
-        } else if (lane2Horse.getDistanceTravelled() == raceLength) {
-            winner = lane2Horse.getName();
-        } else if (lane3Horse.getDistanceTravelled() == raceLength) {
-            winner = lane3Horse.getName();
-        }
+        String winner = getWinner();
 
         if (winner != null) {
             System.out.println("\nThe winner is " + winner + "!");
@@ -118,6 +116,33 @@ public class Race {
         return theHorse.getDistanceTravelled() == raceLength;
     }
 
+    private boolean anyHorseHasFinished() {
+        for (Horse horse : horses) {
+            if (horse != null && raceWonBy(horse)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean allHorsesHaveFallen() {
+        for (Horse horse : horses) {
+            if (horse != null && !horse.hasFallen()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String getWinner() {
+        for (Horse horse : horses) {
+            if (horse != null && raceWonBy(horse)) {
+                return horse.getName();
+            }
+        }
+        return null;
+    }
+
     /**
      * Print the entire race display
      */
@@ -126,20 +151,24 @@ public class Race {
         multiplePrint('=', raceLength + 3);
         System.out.println();
 
-        printLane(lane1Horse);
-        System.out.print(" " + lane1Horse.getName() + " (Current confidence " + String.format("%.2f", lane1Horse.getConfidence()) + ")");
-        System.out.println();
-
-        printLane(lane2Horse);
-        System.out.print(" " + lane2Horse.getName() + " (Current confidence " + String.format("%.2f", lane2Horse.getConfidence()) + ")");
-        System.out.println();
-
-        printLane(lane3Horse);
-        System.out.print(" " + lane3Horse.getName() + " (Current confidence " + String.format("%.2f", lane3Horse.getConfidence()) + ")");
-        System.out.println();
+        for (Horse horse : horses) {
+            if (horse != null) {
+                printLane(horse);
+                System.out.print(" " + horse.getName() + " (Current confidence " + String.format("%.2f", horse.getConfidence()) + ")");
+            } else {
+                printEmptyLane();
+            }
+            System.out.println();
+        }
 
         multiplePrint('=', raceLength + 3);
         System.out.println();
+    }
+
+    private void printEmptyLane() {
+        System.out.print('|');
+        multiplePrint(' ', raceLength + 1);
+        System.out.print('|');
     }
 
     /**
@@ -176,33 +205,72 @@ public class Race {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int raceLength = 0;
+        int laneCount = 0;
+        int nrHorses = 0;
+        boolean validLengthInput = false;
+        boolean validLaneInput = false;
+        boolean validHorseInput = false;
 
         /*
         *  user input validation for int
         */
-        while (true) {
-            System.out.print("Enter the race length (positive integer): ");
-            String input = scanner.nextLine();
+        while (!validLengthInput) {
+            System.out.print("Enter the race length in meters (positive integer): ");
+                String raceInput = scanner.nextLine();
+
+                try {
+                    raceLength = Integer.parseInt(raceInput);
+                    if (raceLength <= 0) {
+                        System.out.println("Please enter a number greater than 0.");
+                    } else {
+                        validLengthInput = true;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("That's not a valid number. Try again.");
+                }
+        }
+
+        while (!validLaneInput) {
+            System.out.print("Enter the lane count (positive integer): ");
+            String laneInput = scanner.nextLine();
 
             try {
-                raceLength = Integer.parseInt(input);
-                if (raceLength > 0) {
-                    break;
-                } else {
+                laneCount = Integer.parseInt(laneInput);
+                if (laneCount <= 0) {
                     System.out.println("Please enter a number greater than 0.");
+                } else {
+                    validLaneInput = true;
                 }
             } catch (NumberFormatException e) {
                 System.out.println("That's not a valid number. Try again.");
             }
         }
 
-        Race race = new Race(raceLength);
+        while (!validHorseInput) {
+            System.out.print("Enter the number of horses (positive integer): ");
+            String horsesInput = scanner.nextLine();
+
+            try {
+                nrHorses = Integer.parseInt(horsesInput);
+                if (nrHorses <= 0) {
+                    System.out.println("Please enter a number greater than 0.");
+                } else if (nrHorses > laneCount) {
+                    System.out.println("You can't have more horses than lanes. Please enter a number less than or equal to " + laneCount + ".");
+                } else {
+                    validHorseInput = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("That's not a valid number. Try again.");
+            }
+        }
+
+        Race race = new Race(raceLength, laneCount);
 
         /*
         *  validates user input 
         */
-        for (int i = 1; i <= 3; i++) {
-            System.out.println("\nEnter details for Horse " + i + ":");
+        for (int i = 0; i < nrHorses; i++) {
+            System.out.println("\nEnter details for Horse " + (i+1) + ":");
 
             String name;
             while (true) {
@@ -245,7 +313,17 @@ public class Race {
 
 
             Horse horse = new Horse(symbol, name, 0.5);
-            race.addHorse(horse, i);
+            
+
+            int lane;
+
+            do {
+                lane = (int) (Math.random() * laneCount);
+                } while (race.horses.get(lane) != null);
+
+            race.addHorse(horse, lane);
+
+            System.out.println("Horse " + name + " added to lane " + lane + ".");
         }
 
         race.startRace();
