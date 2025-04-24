@@ -7,7 +7,7 @@ import java.lang.Math;
  * for a given distance.
  * 
  * @author Xhoel
- * @version 2.5
+ * @version 3.0
  */
 public class Race {
     private int raceLength;
@@ -66,7 +66,8 @@ public class Race {
 
             printRace();
 
-            if (raceWonBy(lane1Horse) || raceWonBy(lane2Horse) || raceWonBy(lane3Horse)) {
+            //made so when all horses fall the race stops
+            if (raceWonBy(lane1Horse) || raceWonBy(lane2Horse) || raceWonBy(lane3Horse) ||(lane1Horse.hasFallen() && lane2Horse.hasFallen() && lane3Horse.hasFallen())) {
                 finished = true;
             }
 
