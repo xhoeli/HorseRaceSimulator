@@ -93,6 +93,10 @@ public class Race {
         }
     }
 
+    public int getRaceLength() {
+        return raceLength;
+    }
+
     /**
      * Moves the horse forward or makes it fall based on confidence
      */
