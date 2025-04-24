@@ -7,14 +7,14 @@ import java.lang.Math;
  * for a given distance.
  * 
  * @author Xhoel
- * @version 2.0
+ * @version 2.5
  */
 public class Race {
     private int raceLength;
     private Horse lane1Horse;
     private Horse lane2Horse;
     private Horse lane3Horse;
-
+    
     /**
      * Constructor for objects of class Race
      * Initially there are no horses in the lanes
@@ -59,7 +59,6 @@ public class Race {
         lane2Horse.goBackToStart();
         lane3Horse.goBackToStart();
 
-        
         while (!finished) {
             moveHorse(lane1Horse);
             moveHorse(lane2Horse);
@@ -112,20 +111,18 @@ public class Race {
 
     /**
      * Determines if the horse has won
+     * makes it more efficient
      */
     private boolean raceWonBy(Horse theHorse) {
-        if (theHorse.getDistanceTravelled() == raceLength) {
-            return true;
-        }
-        return false;
+        return theHorse.getDistanceTravelled() == raceLength;
     }
 
     /**
      * Print the entire race display
      */
     private void printRace() {
-        System.out.print('\u000C');  // Clears the terminal window (on BlueJ or similar)
-        multiplePrint('=', raceLength + 3); // top edge
+        System.out.print('\u000C');
+        multiplePrint('=', raceLength + 3);
         System.out.println();
 
         printLane(lane1Horse);
@@ -140,7 +137,7 @@ public class Race {
         System.out.print(" " + lane3Horse.getName() + " (Current confidence " + String.format("%.2f", lane3Horse.getConfidence()) + ")");
         System.out.println();
 
-        multiplePrint('=', raceLength + 3); // bottom edge
+        multiplePrint('=', raceLength + 3);
         System.out.println();
     }
 
@@ -155,7 +152,7 @@ public class Race {
         multiplePrint(' ', spacesBefore);
 
         if (theHorse.hasFallen()) {
-            System.out.print('\u2322'); 
+            System.out.print('\u2322');
         } else {
             System.out.print(theHorse.getSymbol());
         }
@@ -173,34 +170,84 @@ public class Race {
         }
     }
 
-//allowes the user to enter the length of the race, the horses name and symbol
-   public static void main(String[] args) {
+    //
+    //Main Method
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        int raceLength = 0;
 
-        // Ask user for race length using parse
-        System.out.print("Enter the race length: ");
-        int raceLength = Integer.parseInt(scanner.nextLine());
+        /*
+        *  user input validation for int
+        */
+        while (true) {
+            System.out.print("Enter the race length (positive integer): ");
+            String input = scanner.nextLine();
+
+            try {
+                raceLength = Integer.parseInt(input);
+                if (raceLength > 0) {
+                    break;
+                } else {
+                    System.out.println("Please enter a number greater than 0.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("That's not a valid number. Try again.");
+            }
+        }
 
         Race race = new Race(raceLength);
 
-        // Loop to create 3 horses with user input
+        /*
+        *  validates user input 
+        */
         for (int i = 1; i <= 3; i++) {
             System.out.println("\nEnter details for Horse " + i + ":");
 
-            System.out.print("Name: ");
-            String name = scanner.nextLine();
+            String name;
+            while (true) {
+                System.out.print("Name: ");
+                name = scanner.nextLine();
+                if (!name.trim().isEmpty()) {
+                    break;
+                } else {
+                    System.out.println("Name can't be empty.");
+                }
+            }
 
-            System.out.print("Symbol (single character): ");
-            char symbol = scanner.nextLine().charAt(0);
+            /*
+            *  validates the Input of the user so it accepts a char or a unicode symbol
+            */
+            char symbol;
+            while (true) {
+                System.out.print("Symbol (1 character or \\uXXXX): ");
+                String userInput = scanner.nextLine().trim();
+
+                if (userInput.length() == 1) {
+                    symbol = userInput.charAt(0);
+                    break;
+                } else if (userInput.matches("\\\\u[0-9a-fA-F]{4}")) {
+                    try {
+                        int codePoint = Integer.parseInt(userInput.substring(2), 16);
+                        if (Character.isValidCodePoint(codePoint)) {
+                            symbol = (char) codePoint;
+                            break;
+                        } else {
+                            System.out.println("Invalid Unicode code point.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid Unicode escape sequence.");
+                    }
+                } else {
+                    System.out.println("Enter a single character or valid Unicode like \\u265E.");
+                }
+            }
+
 
             Horse horse = new Horse(symbol, name, 0.5);
             race.addHorse(horse, i);
         }
 
-        // Start the race
         race.startRace();
-
         scanner.close();
     }
-
 }
