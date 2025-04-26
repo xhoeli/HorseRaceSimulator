@@ -111,7 +111,7 @@ public class GUI {
                 double horseConfidence = 0.5;
 
                 // Horse Breed
-                String[] breeds = {"Thoroughbred (normal)", "Arabian (fast)", "Quarter Horse (slow)"};
+                String[] breeds = {"Thoroughbred (normal confidence)", "Arabian (faster and more prone to falling)", "Quarter Horse (slower, less prone to falling)"};
                 String breed = (String) JOptionPane.showInputDialog(setupFrame, "Select breed for " + name + ":", "Breed", JOptionPane.QUESTION_MESSAGE, null, breeds, breeds[0]);
 
                 if (breed != null) {
@@ -128,13 +128,13 @@ public class GUI {
 
                 String[] coats = {"Brown", "White", "Black"};
                 String coatChoice = (String) JOptionPane.showInputDialog(setupFrame, "Select coat color for " + name + ":", "Coat", JOptionPane.QUESTION_MESSAGE, null, coats, coats[0]);
-                String coatEmoji = "🟫"; // default brown
+                String coatEmoji = "🟫"; 
                 if ("White".equals(coatChoice)) coatEmoji = "⬜";
                 if ("Black".equals(coatChoice)) coatEmoji = "⬛";
                 horseCoats.add(coatEmoji);
 
                 // Saddle
-                String[] saddles = {"No Saddle", "Fast Saddle", "Sturdy Saddle"};
+                String[] saddles = {"No Saddle(NO modifiers)", "Fast Saddle(Faster, more prone to falling)", "Sturdy Saddle(Slower, less prone to falling)"};
                 String saddle = (String) JOptionPane.showInputDialog(setupFrame, "Select saddle for " + name + ":", "Saddle", JOptionPane.QUESTION_MESSAGE, null, saddles, saddles[0]);
 
                 if (saddle != null) {
@@ -148,14 +148,14 @@ public class GUI {
                 }
 
                 // Horseshoes
-                String[] shoes = {"Regular Shoes", "Lightweight Shoes", "No Shoes"};
+                String[] shoes = {"Regular Shoes(NO modifier)", "Lightweight Shoes(Fater and more prone to falling)", "Heavyweight Shoes(Slower and less prone to falling)"};
                 String shoe = (String) JOptionPane.showInputDialog(setupFrame, "Select horseshoes for " + name + ":", "Horseshoes", JOptionPane.QUESTION_MESSAGE, null, shoes, shoes[0]);
 
                 if (shoe != null) {
                     if (shoe.startsWith("Lightweight")) {
                         speedModifier *= 1.1;
                         fallModifier *= 1.1;
-                    } else if (shoe.startsWith("No Shoes")) {
+                    } else if (shoe.startsWith("Heavyweight")) {
                         speedModifier *= 0.9;
                         fallModifier *= 0.9;
                     }
@@ -344,11 +344,11 @@ public class GUI {
                 //
                 if (userBetHorse != null) {
                     if (winner != null && userBetHorse.getName().equals(winner)) {
-                        raceOutputArea.append("\n💰 Congratulations! You WON your bet!\n");
+                        raceOutputArea.append("\n Congratulations! You WON your bet!\n");
                         raceOutputArea.append("Winnings: $" + String.format("%.2f", userPotentialWinnings) + "\n");
                         bettingHistory.add("Won on " + userBetHorse.getName() + " and earned $" + String.format("%.2f", userPotentialWinnings));
                     } else {
-                        raceOutputArea.append("\n💸 You LOST your bet.\n");
+                        raceOutputArea.append("\n You LOST your bet.\n");
                         bettingHistory.add("Lost bet on " + (userBetHorse != null ? userBetHorse.getName() : "unknown horse"));
                     }
                     userBetHorse = null;
@@ -357,9 +357,9 @@ public class GUI {
                 }
 
                 if (winner != null) {
-                    raceOutputArea.append("\n\n🏆 Winner: " + winner + "!\n");
+                    raceOutputArea.append("\n\n Winner: " + winner + "!\n");
                 } else {
-                    raceOutputArea.append("\n\n❌ No horse finished the race!\n");
+                    raceOutputArea.append("\n\n No horse finished the race!\n");
                 }
     
                 // Update horses data
@@ -468,7 +468,7 @@ private void showBettingHistory() {
 
     JScrollPane scrollPane = new JScrollPane(historyArea);
 
-    JButton backButton = new JButton("⬅️ Back to Race");
+    JButton backButton = new JButton("Back to Race");
     backButton.addActionListener(ev -> historyFrame.dispose());
 
     historyFrame.add(scrollPane, BorderLayout.CENTER);
