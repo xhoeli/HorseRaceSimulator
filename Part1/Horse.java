@@ -1,6 +1,10 @@
 package Part1;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Write a description of class Horse here.
+ * This class represents individual race participants.
  * 
  * @author Xhoel Permeti 
  * @version 1.0
@@ -14,6 +18,16 @@ public class Horse
     private boolean hasFallen;
     private double confidence;
       
+    private int wins = 0, totalRaces = 0;
+    private List<Double> confidenceHistory = new ArrayList<>();
+    private List<Integer> raceTimes = new ArrayList<>();
+    
+    private int totalDistance = 0;
+    
+    
+    
+    
+
     //Constructor of class Horse
     /**
      * Constructor for objects of class Horse
@@ -27,8 +41,7 @@ public class Horse
         hasFallen = false;
     }
     
-    
-    
+
     //Other methods of class Horse
 
     /**
@@ -103,10 +116,13 @@ public class Horse
      */
     public void setConfidence(double newConfidence)
     {
+        
         if (newConfidence < 0) {
             confidence = 0;
+            System.out.println("Confidence rating cannot be lower than 0. Setting to 0.");
         } else if (newConfidence > 1) {
             confidence = 1;
+            System.out.println("Confidence rating cannot exceed 1. Setting to 1.");
         } else {
             confidence = newConfidence;
         }
@@ -119,4 +135,43 @@ public class Horse
     {
         symbol = newSymbol;
     }
+
+
+    public void addRaceTime(int ms) { raceTimes.add(ms); }
+    
+    public void recordRaceEnd(boolean won, double confidence) {
+        totalRaces++;
+        if (won) wins++;
+        confidenceHistory.add(confidence);
+    }
+    
+    public int getWins() { return wins; }
+    
+    public int getTotalRaces() { return totalRaces; }
+    
+    public double getWinRatio() { return totalRaces > 0 ? (double) wins / totalRaces : 0.0; }
+    
+    public List<Double> getConfidenceHistory() { return confidenceHistory; }
+    
+    public List<Integer> getRaceTimes() { return raceTimes; }
+    
+
+    
+    private List<Integer> distanceHistory = new ArrayList<>();
+
+    // Track how much distance a horse traveled in a race
+    public void addDistance(int distance) {
+        totalDistance += distance;
+        distanceHistory.add(distance);
+    }
+
+    public int getTotalDistance() {
+        return totalDistance;
+    }
+
+    public double getAverageDistance() {
+        return distanceHistory.isEmpty() ? 0.0 : (double) totalDistance / distanceHistory.size();
+    }
+
+
 }
