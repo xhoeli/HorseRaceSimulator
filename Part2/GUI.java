@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * version 2.0
+ * version 3.0
  * 
  */
 
@@ -36,7 +36,7 @@ public class GUI {
     private double userBetAmount = 0.0;
     private double userPotentialWinnings = 0.0;
     private List<String> bettingHistory = new ArrayList<>();
-    private double userBalance = 100.0; // 💵 start with $100
+    private double userBalance = 100.0; 
 
 
 
@@ -283,7 +283,7 @@ public class GUI {
                 userBetAmount = amount;
                 userPotentialWinnings = amount * oddsList.get(selectedIndex);
     
-                JOptionPane.showMessageDialog(setupFrame, "✅ Bet placed on " + userBetHorse.getName() +
+                JOptionPane.showMessageDialog(setupFrame, "Bet placed on " + userBetHorse.getName() +
                         "\nAmount: $" + userBetAmount +
                         "\nPotential Winnings: $" + String.format("%.2f", userPotentialWinnings));
     
@@ -307,7 +307,7 @@ public class GUI {
 
     // Start race directly (used also for new race)
     private void startRace() {
-        raceFrame = new JFrame("🏇 Horse Race Live View");
+        raceFrame = new JFrame("Horse Race Live View");
         raceFrame.setSize(800, 600);
         raceFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         raceFrame.setLayout(new BorderLayout());
@@ -461,7 +461,7 @@ public class GUI {
     
         raceTimer.start();
 
-        raceOutputArea.append("\n\n📜 Betting History:\n");
+        raceOutputArea.append("\n\nBetting History:\n");
         for (String record : bettingHistory) {
             raceOutputArea.append(record + "\n");
         }
@@ -502,7 +502,7 @@ public class GUI {
     
     // Show Betting History in a separate window
 private void showBettingHistory() {
-    JFrame historyFrame = new JFrame("📜 Betting History");
+    JFrame historyFrame = new JFrame("Betting History");
     historyFrame.setSize(400, 400);
     historyFrame.setLayout(new BorderLayout());
 
