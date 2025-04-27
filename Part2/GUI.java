@@ -36,6 +36,8 @@ public class GUI {
     private double userBetAmount = 0.0;
     private double userPotentialWinnings = 0.0;
     private List<String> bettingHistory = new ArrayList<>();
+    private double userBalance = 100.0; // 💵 start with $100
+
 
 
     public GUI() {
@@ -86,34 +88,61 @@ public class GUI {
             raceLength = Integer.parseInt(raceLengthField.getText().trim());
             laneCount = Integer.parseInt(laneCountField.getText().trim());
             int horseCount = Integer.parseInt(horseCountField.getText().trim());
-
+    
             if (horseCount > laneCount) {
                 showError("Horse count cannot exceed lane count!");
                 return;
             }
-
+    
             horses.clear();
             horseCoats.clear();
             horseEmojis.clear();
             speedModifier = 1.0;
             fallModifier = 1.0;
-
+    
             for (int i = 0; i < horseCount; i++) {
-                String name = JOptionPane.showInputDialog(setupFrame, "Enter name for Horse " + (i + 1) + ":");
-                if (name == null || name.isEmpty()) {
-                    name = "Horse" + (i + 1);
+                // --- Name input with uniqueness check ---
+                String name = null;
+                while (name == null) {
+                    String inputNameTemp = JOptionPane.showInputDialog(setupFrame, "Enter a UNIQUE name for Horse " + (i + 1) + ":");
+                    if (inputNameTemp == null || inputNameTemp.trim().isEmpty()) {
+                        showError("Name cannot be empty.");
+                        continue;
+                    }
+                    final String finalInputName = inputNameTemp.trim();
+                    boolean nameExists = horses.stream().anyMatch(h -> h.getName().equalsIgnoreCase(finalInputName));
+                    if (nameExists) {
+                        showError("This name is already taken. Choose another one.");
+                        continue;
+                    }
+                    name = finalInputName;
                 }
-
-                String symbolInput = JOptionPane.showInputDialog(setupFrame, "Enter symbol/emoji for Horse " + (i + 1) + ": (one character or emoji)");
-                char symbol = (symbolInput.length() == 1) ? symbolInput.charAt(0) : (char) ('A' + i);
+    
+                // --- Symbol input with uniqueness check ---
+                String symbolInput = null;
+                while (symbolInput == null) {
+                    String inputSymbolTemp = JOptionPane.showInputDialog(setupFrame, "Enter a UNIQUE symbol/emoji for " + name + ": (one character or emoji)");
+                    if (inputSymbolTemp == null || inputSymbolTemp.trim().isEmpty()) {
+                        showError("Symbol cannot be empty.");
+                        continue;
+                    }
+                    final String finalInputSymbol = inputSymbolTemp.trim();
+                    if (horseEmojis.contains(finalInputSymbol)) {
+                        showError("This symbol is already taken. Choose another one.");
+                        continue;
+                    }
+                    symbolInput = finalInputSymbol;
+                }
                 horseEmojis.add(symbolInput);
-
+    
+                char symbol = (symbolInput.length() == 1) ? symbolInput.charAt(0) : symbolInput.charAt(0);
+    
                 double horseConfidence = 0.5;
-
-                // Horse Breed
+    
+                // --- Breed Selection ---
                 String[] breeds = {"Thoroughbred (normal confidence)", "Arabian (faster and more prone to falling)", "Quarter Horse (slower, less prone to falling)"};
                 String breed = (String) JOptionPane.showInputDialog(setupFrame, "Select breed for " + name + ":", "Breed", JOptionPane.QUESTION_MESSAGE, null, breeds, breeds[0]);
-
+    
                 if (breed != null) {
                     if (breed.startsWith("Arabian")) {
                         horseConfidence = 0.6;
@@ -125,18 +154,19 @@ public class GUI {
                         fallModifier *= 0.9;
                     }
                 }
-
+    
+                // --- Coat Selection ---
                 String[] coats = {"Brown", "White", "Black"};
                 String coatChoice = (String) JOptionPane.showInputDialog(setupFrame, "Select coat color for " + name + ":", "Coat", JOptionPane.QUESTION_MESSAGE, null, coats, coats[0]);
                 String coatEmoji = "🟫"; 
                 if ("White".equals(coatChoice)) coatEmoji = "⬜";
                 if ("Black".equals(coatChoice)) coatEmoji = "⬛";
                 horseCoats.add(coatEmoji);
-
-                // Saddle
+    
+                // --- Saddle Selection ---
                 String[] saddles = {"No Saddle(NO modifiers)", "Fast Saddle(Faster, more prone to falling)", "Sturdy Saddle(Slower, less prone to falling)"};
                 String saddle = (String) JOptionPane.showInputDialog(setupFrame, "Select saddle for " + name + ":", "Saddle", JOptionPane.QUESTION_MESSAGE, null, saddles, saddles[0]);
-
+    
                 if (saddle != null) {
                     if (saddle.startsWith("Fast")) {
                         speedModifier *= 1.2;
@@ -146,11 +176,11 @@ public class GUI {
                         fallModifier *= 0.8;
                     }
                 }
-
-                // Horseshoes
-                String[] shoes = {"Regular Shoes(NO modifier)", "Lightweight Shoes(Fater and more prone to falling)", "Heavyweight Shoes(Slower and less prone to falling)"};
+    
+                // --- Horseshoes Selection ---
+                String[] shoes = {"Regular Shoes(NO modifier)", "Lightweight Shoes(Faster and more prone to falling)", "Heavyweight Shoes(Slower and less prone to falling)"};
                 String shoe = (String) JOptionPane.showInputDialog(setupFrame, "Select horseshoes for " + name + ":", "Horseshoes", JOptionPane.QUESTION_MESSAGE, null, shoes, shoes[0]);
-
+    
                 if (shoe != null) {
                     if (shoe.startsWith("Lightweight")) {
                         speedModifier *= 1.1;
@@ -160,12 +190,12 @@ public class GUI {
                         fallModifier *= 0.9;
                     }
                 }
-
+    
                 Horse horse = new Horse(symbol, name, horseConfidence);
                 horses.add(horse);
             }
-
-            // Weather
+    
+            // --- Weather Modifiers ---
             String weather = (String) weatherBox.getSelectedItem();
             if ("Wet".equals(weather)) {
                 speedModifier *= 0.95;
@@ -174,13 +204,15 @@ public class GUI {
                 speedModifier *= 0.9;
                 fallModifier *= 1.1;
             }
-
-            JOptionPane.showMessageDialog(setupFrame, "Horses are ready! You can now start the race.");
-
+    
+            JOptionPane.showMessageDialog(setupFrame, "✅ Horses are ready! You can now start the race!");
+    
         } catch (NumberFormatException ex) {
             showError("Please enter valid numbers!");
         }
     }
+    
+    
 
     private void openBettingWindow() {
         if (horses.isEmpty()) {
@@ -214,6 +246,10 @@ public class GUI {
         bettingPanel.add(new JLabel("Enter bet amount:"));
         JTextField betAmountField = new JTextField();
         bettingPanel.add(betAmountField);
+
+        JLabel balanceLabel = new JLabel("Current Balance: $" + String.format("%.2f", userBalance));
+        bettingPanel.add(balanceLabel);
+        bettingPanel.add(new JLabel(""));
     
         int result = JOptionPane.showConfirmDialog(setupFrame, bettingPanel, "Place Your Bet", JOptionPane.OK_CANCEL_OPTION);
     
@@ -237,6 +273,11 @@ public class GUI {
                     showError("Enter a positive bet amount.");
                     return;
                 }
+                if (amount > userBalance) {
+                    showError("You don't have enough money to place this bet!");
+                    return;
+                }
+                
     
                 userBetHorse = horses.get(selectedIndex);
                 userBetAmount = amount;
@@ -346,14 +387,14 @@ public class GUI {
                     if (winner != null && userBetHorse.getName().equals(winner)) {
                         raceOutputArea.append("\n Congratulations! You WON your bet!\n");
                         raceOutputArea.append("Winnings: $" + String.format("%.2f", userPotentialWinnings) + "\n");
+                        userBalance += userPotentialWinnings; 
                         bettingHistory.add("Won on " + userBetHorse.getName() + " and earned $" + String.format("%.2f", userPotentialWinnings));
                     } else {
                         raceOutputArea.append("\n You LOST your bet.\n");
-                        bettingHistory.add("Lost bet on " + (userBetHorse != null ? userBetHorse.getName() : "unknown horse"));
+                        userBalance -= userBetAmount; 
+                        bettingHistory.add(" Lost bet on " + (userBetHorse != null ? userBetHorse.getName() : "unknown horse") + " and lost $" + String.format("%.2f", userBetAmount));
                     }
-                    userBetHorse = null;
-                    userBetAmount = 0.0;
-                    userPotentialWinnings = 0.0;
+                    
                 }
 
                 if (winner != null) {
@@ -379,16 +420,26 @@ public class GUI {
                     }
                 }
     
-                // Summary with correct steps
+                // Updated Summary including time and avg speed
                 raceOutputArea.append("\nSummary:\n");
                 for (Horse h : horses) {
+                    int stepsTaken = h.getDistanceTravelled();  // distance traveled this race
+                    int timeTakenMillis = h.getLastRaceTime();  // last race time in ms
+                    double timeInSeconds = timeTakenMillis / 1000.0;
+                    double avgSpeed = (timeInSeconds > 0) ? (stepsTaken / timeInSeconds) : 0.0;  // avoid division by zero
+
                     raceOutputArea.append(h.getName() +
                             " | Conf: " + String.format("%.2f", h.getConfidence()) +
                             " | Wins: " + h.getWins() + "/" + h.getTotalRaces() +
                             " (" + String.format("%.0f", h.getWinRatio() * 100) + "%)" +
-                            " | Total Steps: " + h.getTotalDistance() +
-                            " | Avg Steps: " + String.format("%.1f", h.getAverageDistance()) + "\n");
+                            " | Total Steps: " + stepsTaken +
+                            " | Time: " + String.format("%.2f", timeInSeconds) + "s" +
+                            " | Avg Speed: " + String.format("%.2f", avgSpeed) + " steps/sec\n");
                 }
+
+
+                raceOutputArea.append("\n\nCurrent Balance: $" + String.format("%.2f", userBalance) + "\n");
+
     
                 // Add New Race Button
                 JButton newRaceButton = new JButton("New Race");
