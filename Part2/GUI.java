@@ -38,7 +38,10 @@ public class GUI {
     private List<String> bettingHistory = new ArrayList<>();
     private double userBalance = 100.0; 
 
-
+    private List<String[]> allRecords = new ArrayList<>();
+    private List<String> horseBreeds = new ArrayList<>();
+    private List<String> horseSaddles = new ArrayList<>();
+    private List<String> horseShoes = new ArrayList<>();
 
     public GUI() {
         showSetupWindow();
@@ -148,12 +151,18 @@ public class GUI {
                         horseConfidence = 0.6;
                         speedModifier *= 1.1;
                         fallModifier *= 1.05;
+                        horseBreeds.add(breed);
+
                     } else if (breed.startsWith("Quarter")) {
                         horseConfidence = 0.4;
                         speedModifier *= 0.9;
                         fallModifier *= 0.9;
+                        horseBreeds.add(breed);
+
                     }
                 }
+                horseBreeds.add("Thoroughbred");
+
     
                 // --- Coat Selection ---
                 String[] coats = {"Brown", "White", "Black"};
@@ -171,11 +180,16 @@ public class GUI {
                     if (saddle.startsWith("Fast")) {
                         speedModifier *= 1.2;
                         fallModifier *= 1.2;
+                        horseSaddles.add(saddle);
+
                     } else if (saddle.startsWith("Sturdy")) {
                         speedModifier *= 0.9;
                         fallModifier *= 0.8;
+                        horseSaddles.add(saddle);
+
                     }
-                }
+                }horseSaddles.add("No Saddle");
+
     
                 // --- Horseshoes Selection ---
                 String[] shoes = {"Regular Shoes(NO modifier)", "Lightweight Shoes(Faster and more prone to falling)", "Heavyweight Shoes(Slower and less prone to falling)"};
@@ -185,11 +199,17 @@ public class GUI {
                     if (shoe.startsWith("Lightweight")) {
                         speedModifier *= 1.1;
                         fallModifier *= 1.1;
+                        horseShoes.add(shoe);
+
                     } else if (shoe.startsWith("Heavyweight")) {
                         speedModifier *= 0.9;
                         fallModifier *= 0.9;
+                        horseShoes.add(shoe);
+
                     }
                 }
+                horseShoes.add("Regular Shoes");
+
     
                 Horse horse = new Horse(symbol, name, horseConfidence);
                 horses.add(horse);
@@ -437,6 +457,28 @@ public class GUI {
                             " | Avg Speed: " + String.format("%.2f", avgSpeed) + " steps/sec\n");
                 }
 
+                String trackCondition = (String) weatherBox.getSelectedItem(); // Dry, Wet, Icy
+
+                for (int i = 0; i < horses.size(); i++) {
+                    Horse h = horses.get(i);
+                    int stepsTaken = h.getDistanceTravelled();
+                    int timeTakenMillis = h.getLastRaceTime();
+                    double timeInSeconds = timeTakenMillis / 1000.0;
+
+                    if (!h.hasFallen() && stepsTaken == raceLength) { // finished the race
+                        String[] record = new String[]{
+                            h.getName(),
+                            String.format("%.2f", timeInSeconds),
+                            horseBreeds.get(i),
+                            trackCondition,
+                            horseSaddles.get(i),
+                            horseShoes.get(i)
+                        };
+                        allRecords.add(record);
+                    }
+                }
+
+
 
                 raceOutputArea.append("\n\nCurrent Balance: $" + String.format("%.2f", userBalance) + "\n");
 
@@ -465,6 +507,11 @@ public class GUI {
         for (String record : bettingHistory) {
             raceOutputArea.append(record + "\n");
         }
+
+        JButton recordsButton = new JButton("View Records");
+        recordsButton.addActionListener(ev -> showRecords());
+        raceButtonPanel.add(recordsButton);
+
 
     }
     
@@ -533,6 +580,46 @@ private void showBettingHistory() {
     private void showError(String message) {
         JOptionPane.showMessageDialog(setupFrame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
+
+    private void showRecords() {
+        JFrame recordsFrame = new JFrame("🏆 Race Records");
+        recordsFrame.setSize(600, 400);
+        recordsFrame.setLayout(new BorderLayout());
+    
+        JTextArea recordsArea = new JTextArea();
+        recordsArea.setEditable(false);
+        recordsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+    
+        allRecords.sort((r1, r2) -> Double.compare(Double.parseDouble(r1[1]), Double.parseDouble(r2[1]))); // fastest first
+    
+        StringBuilder text = new StringBuilder();
+        if (allRecords.isEmpty()) {
+            text.append("No race records yet!\n");
+        } else {
+            for (String[] record : allRecords) {
+                text.append(record[0]) // horse name
+                    .append(" | ").append(record[1]).append("s") // time
+                    .append(" | Breed: ").append(record[2])
+                    .append(" | Weather: ").append(record[3])
+                    .append(" | Saddle: ").append(record[4])
+                    .append(" | Shoes: ").append(record[5])
+                    .append("\n");
+            }
+        }
+    
+        recordsArea.setText(text.toString());
+        JScrollPane scrollPane = new JScrollPane(recordsArea);
+    
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(ev -> recordsFrame.dispose());
+    
+        recordsFrame.add(scrollPane, BorderLayout.CENTER);
+        recordsFrame.add(backButton, BorderLayout.SOUTH);
+    
+        recordsFrame.setLocationRelativeTo(null);
+        recordsFrame.setVisible(true);
+    }
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GUI::new);
