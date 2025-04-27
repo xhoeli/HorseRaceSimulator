@@ -12,9 +12,10 @@ import java.lang.Math;
  * for a given distance.
  * 
  * @author Xhoel Permeti
- * @version 4.0
+ * @version 5.0
  */
 public class Race {
+
     private int raceLength;
     private int laneCount;
     List<Horse> horses;
@@ -29,26 +30,29 @@ public class Race {
     }
 
     // Accessor method to get horses
-public List<Horse> getHorses() {
+    public List<Horse> getHorses() {
     return horses;
-}
+    }
 
-// Public method to check if a lane is occupied
-public boolean isLaneOccupied(int lane) {
-    return horses.get(lane) != null;
-}
+    // Public method to check if a lane is occupied
+    public boolean isLaneOccupied(int lane) {
+        return horses.get(lane) != null;
+    }
 
-// Public method to check if all horses have fallen
-public boolean allHorsesHaveFallenPublic() {
-    return allHorsesHaveFallen();
-}
+    // Public method to check if all horses have fallen
+    public boolean allHorsesHaveFallenPublic() {
+        return allHorsesHaveFallen();
+    }
 
-// Public method to check if any horse has finished
-public boolean anyHorseHasFinishedPublic() {
-    return anyHorseHasFinished();
-}
+    // Public method to check if any horse has finished
+    public boolean anyHorseHasFinishedPublic() {
+        return anyHorseHasFinished();
+    }
 
 
+    /**
+     * Adds a horse to a specified lane.
+     */
     public void addHorse(Horse theHorse, int laneNumber) {
         if (laneNumber >= 0 && laneNumber < laneCount) {
             if (horses.get(laneNumber) != null) {
@@ -61,6 +65,9 @@ public boolean anyHorseHasFinishedPublic() {
         }
     }
 
+    /**
+     * Starts the race and needs the speed and fall modifiers
+     */
     public void startRace(double speedModifier, double fallModifier) {
         boolean finished = false;
 
@@ -87,10 +94,17 @@ public boolean anyHorseHasFinishedPublic() {
         }
     }
 
+    /*
+     * Returns the length of the race
+    */
     public int getRaceLength() {
         return raceLength;
     }
 
+
+    /**
+     * Moves the horse forward or makes it fall based on its confidence and the modifiers.
+     */
     private void moveHorse(Horse theHorse, double speedModifier, double fallModifier) {
         if (!theHorse.hasFallen()) {
             if (Math.random() < theHorse.getConfidence() * speedModifier) {
@@ -99,10 +113,14 @@ public boolean anyHorseHasFinishedPublic() {
 
             if (Math.random() < (0.1 * theHorse.getConfidence() * theHorse.getConfidence() * fallModifier)) {
                 theHorse.fall();
-            }
+            theHorse.setConfidence(Math.max(0.0, theHorse.getConfidence() - 0.1));
+            } 
         }
     }
 
+    /**
+     * Checks if the horse has finished the race
+    */
     private boolean raceWonBy(Horse theHorse) {
         return theHorse.getDistanceTravelled() == raceLength;
     }
@@ -116,6 +134,9 @@ public boolean anyHorseHasFinishedPublic() {
         return false;
     }
 
+    /**
+     * Checks if all horses have fallen
+     */
     private boolean allHorsesHaveFallen() {
         for (Horse horse : horses) {
             if (horse != null && !horse.hasFallen()) {
@@ -125,6 +146,9 @@ public boolean anyHorseHasFinishedPublic() {
         return true;
     }
 
+    /**
+     * Returns the name of the horse that won the race.
+     */
     public String getWinner() {
         for (Horse horse : horses) {
             if (horse != null && raceWonBy(horse)) {
@@ -134,6 +158,9 @@ public boolean anyHorseHasFinishedPublic() {
         return null;
     }
 
+    /*  
+     * Prints the current state of the race
+     */
     private void printRace() {
         System.out.print('\u000C');
         multiplePrint('=', raceLength + 3);
@@ -185,9 +212,19 @@ public boolean anyHorseHasFinishedPublic() {
 
     private int startTime;
 
-    public void startTimer() { startTime = (int) System.currentTimeMillis(); }
+    /*
+     * Starts a timer (used for tracking race time).
+     */
+    public void startTimer() { 
+        startTime = (int) System.currentTimeMillis(); 
+    }
 
-    public int endTimer() { return (int) System.currentTimeMillis() - startTime; }
+    /*
+     * Ends the timer and returns the total time elapsed.
+     */
+    public int endTimer() { 
+        return (int) System.currentTimeMillis() - startTime; 
+    }
 
 
     // Main method
@@ -202,7 +239,6 @@ public boolean anyHorseHasFinishedPublic() {
 
         while (true) {
             if (horses.isEmpty()) {
-                // First time setup
                 boolean validLengthInput = false;
                 boolean validLaneInput = false;
                 boolean validHorseInput = false;
