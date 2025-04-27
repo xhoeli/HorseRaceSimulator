@@ -7,7 +7,7 @@ import java.util.List;
  * This class represents individual race participants.
  * 
  * @author Xhoel Permeti 
- * @version 1.0
+ * @version 2.0
  */
 public class Horse
 {
@@ -50,8 +50,7 @@ public class Horse
     public void fall()
     {
         hasFallen = true;
-        // slightly decrease confidence once the horse has fallen
-        confidence = confidence - 0.1; 
+
     }
     
     /**
@@ -136,42 +135,90 @@ public class Horse
         symbol = newSymbol;
     }
 
-
+    /**
+     * creates a timer for the horse in ms
+     */
     public void addRaceTime(int ms) { raceTimes.add(ms); }
     
+
+    /**
+     * Keeps a record for each horse
+     */
     public void recordRaceEnd(boolean won, double confidence) {
         totalRaces++;
         if (won) wins++;
         confidenceHistory.add(confidence);
     }
     
-    public int getWins() { return wins; }
+    /**
+     * Returns the number of wins for this horse.
+     */
+
+    public int getWins() { 
+        return wins; 
+    }
     
-    public int getTotalRaces() { return totalRaces; }
+    /**
+     * Returns the number of races it has participated
+    */
+    public int getTotalRaces() { 
+        return totalRaces; 
+    }
     
-    public double getWinRatio() { return totalRaces > 0 ? (double) wins / totalRaces : 0.0; }
+    /*  
+     * Returns the win ratio of the horse.
+     */
+    public double getWinRatio() { 
+        return totalRaces > 0 ? (double) wins / totalRaces : 0.0; 
+    }
     
-    public List<Double> getConfidenceHistory() { return confidenceHistory; }
+    /*
+     * Returns the confidence history of the horse.
+     */
+    public List<Double> getConfidenceHistory() { 
+        return confidenceHistory; 
+    }
     
-    public List<Integer> getRaceTimes() { return raceTimes; }
+    /*
+     * Returns a list of race times recorded
+    */
+    public List<Integer> getRaceTimes(){ 
+        return raceTimes; 
+    }
     
 
     
     private List<Integer> distanceHistory = new ArrayList<>();
 
-    // Track how much distance a horse traveled in a race
+    // adds the distance trveled by the horse to the totasl distance
     public void addDistance(int distance) {
         totalDistance += distance;
         distanceHistory.add(distance);
     }
 
+    // returns the total distance traveled by the horse
     public int getTotalDistance() {
         return totalDistance;
     }
 
+    // returns the average distance traveled by the horse between all the races
     public double getAverageDistance() {
-        return distanceHistory.isEmpty() ? 0.0 : (double) totalDistance / distanceHistory.size();
+        if (distanceHistory.isEmpty()) {
+            return 0.0;
+        } else {
+            return (double) totalDistance / distanceHistory.size();
+        }
+        
     }
+
+    //returns the time taken for the most recent race
+    public int getLastRaceTime() {
+        if (raceTimes.isEmpty()) {
+            return 0;
+        }
+        return raceTimes.get(raceTimes.size() - 1); // last race's time
+    }
+    
 
 
 }
